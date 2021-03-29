@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/electric"
+        android:title="@string/elektrichestvo"
+        android:icon="@drawable/ic_baseline_emoji_objects_24"/>
+    <item
+        android:id="@+id/gaz"
+        android:icon="@drawable/ic_baseline_whatshot_24"
+        android:title="@string/gaz"
+        android:visible="true"
+        />
+    <item
+        android:id="@+id/water"
+        android:icon="@drawable/ic_baseline_opacity_24"
+        android:title="@string/water" />
+</menu>

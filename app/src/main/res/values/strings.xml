@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Счётчики</string>
+    <string name="Accept">Сохранить</string>
+    <string name="enter_meter">Показания счётчика</string>
+    <string name="enter_date">Дата</string>
+    <string name="elektrichestvo">Электричество</string>
+    <string name="gaz">Газ</string>
+    <string name="water">Вода</string>
+    <string name="todo">TODO</string>
+</resources>
