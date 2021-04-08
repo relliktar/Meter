@@ -67,7 +67,11 @@ public class ElectricResult extends AppCompatActivity {
     }
 
     public void clearBase(View view) {
-        helper.getWritableDatabase().execSQL(String.format(" DELETE FROM  %s ; ", ElectricMeterTable.TABLE_ELECTRIC));
+        helper.getWritableDatabase().delete(
+                ElectricMeterTable.TABLE_ELECTRIC,
+                null,
+                null
+        );
         updateCursor();
     }
 
@@ -92,27 +96,57 @@ public class ElectricResult extends AppCompatActivity {
     }
 
     private void deleteValue(int position) {
+        // Получаем курсор из адаптера
+        Cursor cursor = adapter.getCursor();
+        // Двигаем курсор на выбранную позицию (строка, на которой было вызвано меню)
+        cursor.moveToPosition(position);
+        // Получаем из курсора ID строки в базе данных.
+        String databaseId = cursor.getString(cursor.getColumnIndex(ElectricMeterTable.COLUMN_ID));
+        // Удаляем из базы строку по выбраному ID
+        helper.getWritableDatabase().delete(
+                ElectricMeterTable.TABLE_ELECTRIC+"",
+                ElectricMeterTable.COLUMN_ID +" = ? ",
+                new String[]{databaseId}
+        );
+        cursor.close();
+        updateCursor();
     }
 
     private void updateValue(int position) {
+        // Создаём диалоговое окно с обновлением выбранной позиции.
         View dialog = getLayoutInflater().inflate(R.layout.add_to_base, null);
+        // Получаем курсор из адаптера.
         Cursor cursor = adapter.getCursor();
+        // Двигаем курсор на выбранную позицию (строка, на которой было вызвано меню)
         cursor.moveToPosition(position);
+        // Получаем из курсора ID выбранной строки в базе данных,
         String databaseId = cursor.getString(cursor.getColumnIndex(ElectricMeterTable.COLUMN_ID));
+        // значение показаний,
         String value = cursor.getString(cursor.getColumnIndex(ElectricMeterTable.COLUMN_READINGS));
+        // значение даты.
         String dat = cursor.getString(cursor.getColumnIndex(ElectricMeterTable.COLUMN_DATE));
+
         EditText pokazaniya = dialog.findViewById(R.id.ediText);
         TextView dateText = dialog.findViewById(R.id.dateText);
+        // Присваиваем значение показаний в поле показаний диалогового окна.
         pokazaniya.setText(value);
+
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         try {
+            // Форматируем дату для
             Date data = format.parse(dat);
+            // Дата не должна быть нулём.
+            assert data != null;
+            // Присваиваем значение даты в поле даты диалогового окна.
             dateText.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(data));
+            // Обрабатываем нажатие на поле даты диалогового окна.
             dateText.setOnClickListener(v -> {
+                // Разбираем дату из диалога на день, месяц и год для передачи в диалог даты.
                 String[] date = dateText.getText().toString().split("\\.");
                 int mYear = Integer.parseInt(date[2]);
                 int mMonth = Integer.parseInt(date[1]) - 1;
                 int mDay = Integer.parseInt(date[0]);
+                // Создаём диалог с вводом даты.
                 DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                         (view, year, month, dayOfMonth) -> {
                             String datepickertext;
@@ -121,8 +155,11 @@ public class ElectricResult extends AppCompatActivity {
                             if ((month + 1) < 10)
                                 datepickertext = datepickertext + "0" + (month + 1) + "." + year;
                             else datepickertext = datepickertext + (month + 1) + "." + year;
+                            // Устанавливаем выбранную дату.
                             dateText.setText(datepickertext);
+                            // Проверяем наличие выбранной даты в базе.
                             String data_v_baze = DBWork.getDate(dateText);
+                            // Если есть, то показываем предупреждение.
                             if (DBWork.proverkaDat(this, data_v_baze)){
                                 dialog.findViewById(R.id.error_date).setVisibility(View.VISIBLE);
                             }
@@ -131,6 +168,7 @@ public class ElectricResult extends AppCompatActivity {
                 datePickerDialog.show();
             });
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         AlertDialog.Builder b = new AlertDialog.Builder(this);
@@ -139,11 +177,12 @@ public class ElectricResult extends AppCompatActivity {
             if( dialog.findViewById(R.id.error_date).getVisibility() == View.INVISIBLE){
             String dt = DBWork.getDate(dateText);
             int meter_reading = Integer.parseInt(pokazaniya.getText().toString());
-            DBWork.updateLine(this, databaseId, dt, meter_reading);
-            Log.d("amicus", "id "+databaseId+", data "+dt+", pokaz "+meter_reading);}
+            // Передаём для обновления ID строки, новую дату, новые показания, старую дату)
+            DBWork.updateLine(this, databaseId, dt, meter_reading, dat);}
             updateCursor();
         });
         b.setNegativeButton("Отмена", (dialog12, which) -> dialog12.cancel());
         b.create().show();
+        cursor.close();
     }
 }

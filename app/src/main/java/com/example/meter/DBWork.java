@@ -3,6 +3,7 @@ package com.example.meter;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.series.DataPoint;
@@ -114,7 +115,7 @@ public class DBWork {
     }
 
     // Обновляем строку с переданным ID новыми датой и показаниями.
-    static void updateLine(Context context, String databaseId, String dat, int meter_reading) {
+    static void updateLine(Context context, String databaseId, String dat, int meter_reading, String oldDate) {
         MeterDBHelper helper = new MeterDBHelper(context);
         int id = Integer.parseInt(databaseId);
 
